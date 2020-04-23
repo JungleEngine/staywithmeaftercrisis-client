@@ -12,9 +12,11 @@ class VideoPlayer extends Component {
     this.onPlay = this.onPlay.bind(this);
     this.onPause = this.onPause.bind(this);
     this.onStateChange = this.onStateChange.bind(this);
-    this.pause = this.pause.bind(this);
-    this.play = this.play.bind(this);
-    this.seek = this.seek.bind(this);
+    this.getVideoCurrentTime = this.getVideoCurrentTime.bind(this);
+
+    this.pause = this.pause.bind(this); // To be used by external controller
+    this.play = this.play.bind(this); // To be used by external controller
+    this.seek = this.seek.bind(this); // To be used by external controller
 
     this.state = {
       videoPlayer: {
@@ -32,6 +34,12 @@ class VideoPlayer extends Component {
       },
     };
   }
+
+  componentDidMount() {
+    // VideoPlayer should send regular updates to component owner.
+    setInterval(this.getVideoCurrentTime, this.props.updatesInterval);
+  }
+
   render() {
     return (
       <YouTube
@@ -45,6 +53,21 @@ class VideoPlayer extends Component {
         // onStateChange={this.onStateChange} // Not needed now as it is the same as onReady, onPlay, onPause
       />
     );
+  }
+
+  getVideoCurrentTime() {
+    // Using promises to avoid blocking code.
+    let getCurrentTimePromise = this.internalvideoPlayerRef.current.internalPlayer.getCurrentTime();
+
+    getCurrentTimePromise
+      .then(currentTime =>
+        this.props.videoPlayerIntervalUpdates({
+          currentTime: currentTime,
+        })
+      )
+      .catch(err =>
+        console.log("Error in videoPlayer while getting videoCurrentTime")
+      );
   }
 
   onReady(event) {
@@ -86,22 +109,27 @@ class VideoPlayer extends Component {
 
   onStateChange(event) {}
 
+  // Called by room-manager
   pause(caller) {
     console.log("Pause called from room manager");
     this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
     this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
     // set state to pause
+    this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
   }
 
+  // Called by room-manager
   play(caller) {
     console.log("Play called from room manager");
     this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
     this.internalvideoPlayerRef.current.internalPlayer.playVideo();
   }
 
-  seek(caller) {
-    console.log("Seek called from room manager");
+  // Called by room-manager
+  seek(caller, data) {
+    console.log(`Seek called from room manager to time:${data.currentTime}`);
+    this.internalvideoPlayerRef.current.internalPlayer.seekTo(data.currentTime);
   }
 }
 

@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import io from "socket.io-client";
 import RoomForm from "./roomForm";
 import VideoPlayer from "./videoPlayer";
+import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
 class Room extends Component {
   constructor(props) {
@@ -9,6 +10,7 @@ class Room extends Component {
     this.state = {
       socket: null,
       url: null,
+      videoPlayerIsReady: false, //To be set by a callback from videoPlayer to indicate that videoPlayer is ready..
     };
     this.videoPlayerRef = React.createRef();
     // Can be replaced by ()=> function as it binds this to Room Object
@@ -17,10 +19,15 @@ class Room extends Component {
       setURL: this.setURL.bind(this),
       update: this.update.bind(this),
     };
-    
+
+    // Bind functions that needs reference to this
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.sendToServer = this.sendToServer.bind(this);
     this.handleVideoPlayerEvents = this.handleVideoPlayerEvents.bind(this);
+    this.handleVideoPlayerIntervalUpdates = this.handleVideoPlayerIntervalUpdates.bind(
+      this
+    );
+
     this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
     this.pauseVideo = this.pauseVideo.bind(this);
     this.playVideo = this.playVideo.bind(this);
@@ -64,11 +71,21 @@ class Room extends Component {
   }
   update(data) {
     console.log("received update action: ", data);
+
+    if (this.state.videoPlayerIsReady === false) {
+      console.log(
+        "cannot perform action from server as video player is not ready/loaded yet.."
+      );
+      return;
+    }
     if (data.action === "play") {
       this.playVideo();
     }
     if (data.action === "pause") {
       this.pauseVideo();
+    }
+    if (data.action === "seek") {
+      this.seekVideo(data);
     }
   }
   attachRoomEvents() {
@@ -90,9 +107,24 @@ class Room extends Component {
     this.state.socket.emit(channel, _data);
   }
 
-  handleVideoPlayerEvents(action, data) {
+  handleVideoPlayerIntervalUpdates(data) {
+    console.log(
+      `Interval updates from player: currentTime:${data.currentTime}`
+    );
+
+    this.sendToServer("update", {
+      action: "seek",
+      currentTime: data.currentTime,
+    });
+  }
+
+  handleVideoPlayerEvents(action, _data) {
+    // If action == Ready, then set videoPlayer Ready state to true.
+    if (action === VIDEO_PLAYER_ACTIONS.READY) {
+      this.setState({ videoPlayerIsReady: true });
+    }
     console.log(`Event handler called from videoPlayer with action:${action}`);
-    this.sendToServer("update", { action: action, data: "empty" });
+    this.sendToServer("update", { action: action, data: {} });
   }
 
   pauseVideo() {
@@ -104,12 +136,24 @@ class Room extends Component {
     console.log("Room Manager is going to play video..");
     this.videoPlayerRef.current.play(this);
   }
+
+  //TODO:: Check potential bug may occur as player maybe called to seek but not loaded yet.
+  //This potential bug is probably fixed by adding videoplayer ready state, updated when player is ready (onReady)
+  seekVideo(data) {
+    console.log("Room Manager is going to seek video..");
+    this.videoPlayerRef.current.seek(this, {
+      currentTime: data.data.currentTime,
+    });
+  }
+
   renderVideoPlayer() {
     if (this.state.url) {
       return (
         <VideoPlayer
           ref={this.videoPlayerRef}
           key="videoPlayer"
+          videoPlayerIntervalUpdates={this.handleVideoPlayerIntervalUpdates}
+          updatesInterval={50000}
           handleEvents={this.handleVideoPlayerEvents}
           videoId={this.getVideoID()}
         />
@@ -118,6 +162,7 @@ class Room extends Component {
       return <h1>URL not set</h1>;
     }
   }
+
   render() {
     return (
       <div>
