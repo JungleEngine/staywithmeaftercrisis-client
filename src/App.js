@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Room from "./components/room";
 import VideoPlayer from "./components/videoPlayer";
-import {VIDEO_PLAYER_ACTIONS} from './constants/videoPlayerActions'
+import { VIDEO_PLAYER_ACTIONS } from "./constants/videoPlayerActions";
 
 class App extends Component {
   constructor(props) {
@@ -14,9 +14,9 @@ class App extends Component {
         height: "390",
         width: "640",
         playerVars: {
-          autoplay: 0
-        }
-      }
+          autoplay: 0,
+        },
+      },
     };
 
     // Bind functions that needs reference to this
@@ -27,11 +27,11 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <VideoPlayer
+        {/* <VideoPlayer
           ref={this.videoPlayerRef}
           key="videoPlayer"
           handleEvents={this.handleVideoPlayerEvents}
-        />
+        /> */}
         <Router>
           <Switch>
             <Route component={Room} exact path="/room/:id" />
