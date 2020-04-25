@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import YouTube from "react-youtube";
-import {VIDEO_PLAYER_ACTIONS} from './../constants/videoPlayerActions'
+import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
 class VideoPlayer extends Component {
   constructor(props) {
@@ -21,17 +21,18 @@ class VideoPlayer extends Component {
         height: "390",
         width: "640",
         playerVars: {
-          autoplay: 0
-        }
-      }
+          autoplay: 0,
+        },
+      },
     };
   }
   state = {};
   render() {
     return (
       <YouTube
+        key="vid"
         ref={this.videoPlayerRef}
-        videoId="2g811Eo7K8U"
+        videoId={this.props.videoId}
         opts={this.state.videoPlayer}
         onReady={this.onReady}
         onPlay={this.onPlay}
@@ -54,13 +55,14 @@ class VideoPlayer extends Component {
   }
 
   onStateChange(event) {
-    this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, { event: event });
+    this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
+      event: event,
+    });
   }
 
   pause(caller) {
     console.log("Pause called from room manager");
     this.videoPlayerRef.current.internalPlayer.pauseVideo();
-
   }
 
   play(caller) {

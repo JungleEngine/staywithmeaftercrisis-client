@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import io from "socket.io-client";
 import RoomForm from "./roomForm";
+import VideoPlayer from "./videoPlayer";
+import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
 // To be added as props.
 // const SOCKET_URL = "http://127.0.0.1:8090";
@@ -12,7 +14,7 @@ class Room extends Component {
       socket: null,
       url: null,
     };
-
+    this.videoPlayerRef = React.createRef();
     // Can be replaced by ()=> function as it binds this to Room Object
     this.eventHandlers = {
       connect: this.handleConnect.bind(this),
@@ -21,6 +23,8 @@ class Room extends Component {
     };
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.sendToServer = this.sendToServer.bind(this);
+    this.handleVideoPlayerEvents = this.handleVideoPlayerEvents.bind(this);
+    this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
   }
 
   componentDidMount() {
@@ -43,6 +47,22 @@ class Room extends Component {
     console.log("received url:", data);
     this.setState({ url: data.url });
   }
+  getVideoID() {
+    let url = this.state.url;
+    if (!url) {
+      return null;
+    }
+    let vidID;
+    let rx = /^.*(?:(?:youtu\.be\/|v\/|vi\/|u\/\w\/|embed\/)|(?:(?:watch)?\?v(?:i)?=|&v(?:i)?=))([^#&?]*).*/;
+
+    vidID = url.match(rx);
+    if (vidID) {
+      return vidID[1];
+    } else {
+      console.log("unable to parse youtube video: ", url);
+      return null;
+    }
+  }
   update(data) {
     console.log("received update action: ", data);
   }
@@ -64,11 +84,33 @@ class Room extends Component {
   sendToServer(channel, data) {
     this.state.socket.emit(channel, data);
   }
+  handleVideoPlayerEvents(action, data) {
+    console.log(`Event handler called from videoPlayer with action:${action}`);
+    if (!this.state.tmpCalledPause && action === VIDEO_PLAYER_ACTIONS.PLAY) {
+      this.setState({ tmpCalledPause: 1 });
+      this.pauseVideo();
+    }
+  }
+  renderVideoPlayer() {
+    if (this.state.url) {
+      return (
+        <VideoPlayer
+          ref={this.videoPlayerRef}
+          key="videoPlayer"
+          handleEvents={this.handleVideoPlayerEvents}
+          videoId={this.getVideoID()}
+        />
+      );
+    } else {
+      return <h1>URL not set</h1>;
+    }
+  }
   render() {
     return (
       <div>
         <h1>Room Page</h1>
         <RoomForm key="urlbtn" submit={this.handleSubmitForm} />
+        {this.renderVideoPlayer()}
       </div>
     );
   }
