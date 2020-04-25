@@ -25,6 +25,9 @@ class Room extends Component {
     this.sendToServer = this.sendToServer.bind(this);
     this.handleVideoPlayerEvents = this.handleVideoPlayerEvents.bind(this);
     this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
+    // Bind functions that needs reference to this
+    this.pauseVideo = this.pauseVideo.bind(this);
+    this.playVideo = this.playVideo.bind(this);
   }
 
   componentDidMount() {
@@ -90,6 +93,17 @@ class Room extends Component {
       this.setState({ tmpCalledPause: 1 });
       this.pauseVideo();
     }
+  }
+  // TODO: We will use seek instead, or seek then pause
+  pauseVideo() {
+    console.log("Room Manager is going to pause video..");
+    this.videoPlayerRef.current.pause(this);
+  }
+
+  // TODO: We will use seek instead, or seek then play
+  playVideo() {
+    console.log("Room Manager is going to play video..");
+    this.videoPlayerRef.current.play(this);
   }
   renderVideoPlayer() {
     if (this.state.url) {

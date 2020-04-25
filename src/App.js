@@ -16,10 +16,6 @@ class App extends Component {
         },
       },
     };
-
-    // Bind functions that needs reference to this
-    this.pauseVideo = this.pauseVideo.bind(this);
-    this.playVideo = this.playVideo.bind(this);
   }
   render() {
     return (
@@ -37,18 +33,6 @@ class App extends Component {
         </Router>
       </div>
     );
-  }
-
-  // TODO: We will use seek instead, or seek then pause
-  pauseVideo() {
-    console.log("Room Manager is going to pause video..");
-    this.videoPlayerRef.current.pause(this);
-  }
-
-  // TODO: We will use seek instead, or seek then play
-  playVideo() {
-    console.log("Room Manager is going to play video..");
-    this.videoPlayerRef.current.play(this);
   }
 }
 

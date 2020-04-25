@@ -48,21 +48,30 @@ class VideoPlayer extends Component {
 
   onPlay(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, { event: event });
+    // broadcast
   }
 
   onPause(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, { event: event });
+    console.log("on pause");
+    // if state != pause
+    // broadcast pause
+    // set state to pause
+    // else
+    // do nothing
   }
 
   onStateChange(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
       event: event,
     });
+    // broadcast
   }
 
   pause(caller) {
     console.log("Pause called from room manager");
     this.videoPlayerRef.current.internalPlayer.pauseVideo();
+    // don't broadcast to users
   }
 
   play(caller) {
