@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import io from "socket.io-client";
 import RoomForm from "./roomForm";
 import VideoPlayer from "./videoPlayer";
-import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
 // To be added as props.
 // const SOCKET_URL = "http://127.0.0.1:8090";
@@ -90,18 +89,13 @@ class Room extends Component {
     this.sendToServer("setRoomURL", { url: form.value });
   }
 
-  sendToServer(channel, data) {
-    this.state.socket.emit(channel, data);
+  sendToServer(channel, _data) {
+    this.state.socket.emit(channel, _data);
   }
+
   handleVideoPlayerEvents(action, data) {
     console.log(`Event handler called from videoPlayer with action:${action}`);
-    //if (action == VIDEO_PLAYER_ACTIONS.PAUSE) {
-    this.sendToServer("update", { action: action, data: data });
-    //}
-    // if (!this.state.tmpCalledPause && action === VIDEO_PLAYER_ACTIONS.PLAY) {
-    //   this.setState({ tmpCalledPause: 1 });
-    //   this.pauseVideo();
-    // }
+    this.sendToServer("update", { action: action, data: "empty" });
   }
   // TODO: We will use seek instead, or seek then pause
   pauseVideo() {

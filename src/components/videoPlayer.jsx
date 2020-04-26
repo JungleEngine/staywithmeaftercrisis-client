@@ -22,12 +22,17 @@ class VideoPlayer extends Component {
         height: "390",
         width: "640",
         playerVars: {
-          autoplay: 0,
+          mute: 1,
+          autoplay: 1,
+          rel: 0, //  Don’t show related videos
+          theme: "light", // Use a light player instead of a dark one
+          controls: 1, // Show player controls
+          showinfo: 0, // Don’t show title or loader,
+          modestbranding: 0,
         },
       },
     };
   }
-  state = {};
   render() {
     return (
       <YouTube
@@ -48,8 +53,6 @@ class VideoPlayer extends Component {
   }
 
   onPlay(event) {
-    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, { event: event });
-    // broadcast
     console.log("on play");
     if (this.videoState !== VIDEO_PLAYER_ACTIONS.PLAY) {
       console.log("played due to self playing");
@@ -64,7 +67,6 @@ class VideoPlayer extends Component {
   }
 
   onPause(event) {
-    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, { event: event });
     console.log("on pause");
     if (this.videoState !== VIDEO_PLAYER_ACTIONS.PAUSE) {
       console.log("paused due to self pausing");
@@ -83,25 +85,20 @@ class VideoPlayer extends Component {
     // do nothing
   }
 
-  onStateChange(event) {
-    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
-    //   event: event,
-    // });
-    // broadcast
-  }
+  onStateChange(event) {}
 
   pause(caller) {
     console.log("Pause called from room manager");
+    this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
     this.videoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
     // set state to pause
-    this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
   }
 
   play(caller) {
     console.log("Play called from room manager");
-    this.videoPlayerRef.current.internalPlayer.playVideo();
     this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
+    this.videoPlayerRef.current.internalPlayer.playVideo();
   }
 
   seek(caller) {
