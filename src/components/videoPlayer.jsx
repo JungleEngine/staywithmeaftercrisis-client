@@ -5,6 +5,7 @@ import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 class VideoPlayer extends Component {
   constructor(props) {
     super(props);
+    this.videoState = VIDEO_PLAYER_ACTIONS.READY;
     this.videoPlayerRef = React.createRef();
 
     this.onReady = this.onReady.bind(this);
@@ -13,8 +14,8 @@ class VideoPlayer extends Component {
     this.onStateChange = this.onStateChange.bind(this);
 
     this.pause = this.pause.bind(this); // To be used by external controller
-    this.play = this.pause.bind(this); // To be used by external controller
-    this.seek = this.pause.bind(this); // To be used by external controller
+    this.play = this.play.bind(this); // To be used by external controller
+    this.seek = this.seek.bind(this); // To be used by external controller
 
     this.state = {
       videoPlayer: {
@@ -47,13 +48,34 @@ class VideoPlayer extends Component {
   }
 
   onPlay(event) {
-    this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, { event: event });
+    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, { event: event });
     // broadcast
+    console.log("on play");
+    if (this.videoState !== VIDEO_PLAYER_ACTIONS.PLAY) {
+      console.log("played due to self playing");
+      this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
+      // broadcast play
+      this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, {
+        value: "empty data for now",
+      });
+    } else {
+      console.log("played due to other playing");
+    }
   }
 
   onPause(event) {
-    this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, { event: event });
+    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, { event: event });
     console.log("on pause");
+    if (this.videoState !== VIDEO_PLAYER_ACTIONS.PAUSE) {
+      console.log("paused due to self pausing");
+      this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
+      // broadcast pause
+      this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, {
+        value: "empty data for now",
+      });
+    } else {
+      console.log("paused due to other pausing");
+    }
     // if state != pause
     // broadcast pause
     // set state to pause
@@ -62,9 +84,9 @@ class VideoPlayer extends Component {
   }
 
   onStateChange(event) {
-    this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
-      event: event,
-    });
+    // this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
+    //   event: event,
+    // });
     // broadcast
   }
 
@@ -72,10 +94,14 @@ class VideoPlayer extends Component {
     console.log("Pause called from room manager");
     this.videoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
+    // set state to pause
+    this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
   }
 
   play(caller) {
     console.log("Play called from room manager");
+    this.videoPlayerRef.current.internalPlayer.playVideo();
+    this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
   }
 
   seek(caller) {

@@ -68,6 +68,12 @@ class Room extends Component {
   }
   update(data) {
     console.log("received update action: ", data);
+    if (data.action === "play") {
+      this.playVideo();
+    }
+    if (data.action === "pause") {
+      this.pauseVideo();
+    }
   }
   attachRoomEvents() {
     for (var event in this.eventHandlers) {
@@ -89,10 +95,13 @@ class Room extends Component {
   }
   handleVideoPlayerEvents(action, data) {
     console.log(`Event handler called from videoPlayer with action:${action}`);
-    if (!this.state.tmpCalledPause && action === VIDEO_PLAYER_ACTIONS.PLAY) {
-      this.setState({ tmpCalledPause: 1 });
-      this.pauseVideo();
-    }
+    //if (action == VIDEO_PLAYER_ACTIONS.PAUSE) {
+    this.sendToServer("update", { action: action, data: data });
+    //}
+    // if (!this.state.tmpCalledPause && action === VIDEO_PLAYER_ACTIONS.PLAY) {
+    //   this.setState({ tmpCalledPause: 1 });
+    //   this.pauseVideo();
+    // }
   }
   // TODO: We will use seek instead, or seek then pause
   pauseVideo() {
