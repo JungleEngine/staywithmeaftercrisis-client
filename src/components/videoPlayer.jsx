@@ -12,18 +12,18 @@ class VideoPlayer extends Component {
     this.onPause = this.onPause.bind(this);
     this.onStateChange = this.onStateChange.bind(this);
 
-    this.pause = this.pause.bind(this); // To be used by external controller
-    this.play = this.pause.bind(this); // To be used by external controller
-    this.seek = this.pause.bind(this); // To be used by external controller
+    this.pause = this.pause.bind(this);
+    this.play = this.pause.bind(this);
+    this.seek = this.pause.bind(this);
 
     this.state = {
       videoPlayer: {
         height: "390",
         width: "640",
         playerVars: {
-          autoplay: 0,
-        },
-      },
+          autoplay: 0
+        }
+      }
     };
   }
   state = {};
@@ -48,36 +48,31 @@ class VideoPlayer extends Component {
 
   onPlay(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, { event: event });
-    // broadcast
   }
 
   onPause(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PAUSE, { event: event });
     console.log("on pause");
-    // if state != pause
-    // broadcast pause
-    // set state to pause
-    // else
-    // do nothing
   }
 
   onStateChange(event) {
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.STATE_CHANGED, {
-      event: event,
+      event: event
     });
-    // broadcast
   }
 
+  // Called by room-manager
   pause(caller) {
     console.log("Pause called from room manager");
     this.videoPlayerRef.current.internalPlayer.pauseVideo();
-    // don't broadcast to users
   }
 
+  // Called by room-manager
   play(caller) {
     console.log("Play called from room manager");
   }
 
+  // Called by room-manager
   seek(caller) {
     console.log("Seek called from room manager");
   }

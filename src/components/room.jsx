@@ -4,28 +4,26 @@ import RoomForm from "./roomForm";
 import VideoPlayer from "./videoPlayer";
 import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
-// To be added as props.
-// const SOCKET_URL = "http://127.0.0.1:8090";
-
 class Room extends Component {
   constructor(props) {
     super(props);
     this.state = {
       socket: null,
-      url: null,
+      url: null
     };
     this.videoPlayerRef = React.createRef();
     // Can be replaced by ()=> function as it binds this to Room Object
     this.eventHandlers = {
       connect: this.handleConnect.bind(this),
       setURL: this.setURL.bind(this),
-      update: this.update.bind(this),
+      update: this.update.bind(this)
     };
+
+    // Bind functions that needs reference to this
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.sendToServer = this.sendToServer.bind(this);
     this.handleVideoPlayerEvents = this.handleVideoPlayerEvents.bind(this);
     this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
-    // Bind functions that needs reference to this
     this.pauseVideo = this.pauseVideo.bind(this);
     this.playVideo = this.playVideo.bind(this);
   }
@@ -40,7 +38,7 @@ class Room extends Component {
 
     const socket = io(socketUrl, {
       query: `roomName=${roomName}&action=${action}`,
-      multiplex: false,
+      multiplex: false
     });
     await this.setState({ socket });
     this.attachRoomEvents();
@@ -94,13 +92,12 @@ class Room extends Component {
       this.pauseVideo();
     }
   }
-  // TODO: We will use seek instead, or seek then pause
+
   pauseVideo() {
     console.log("Room Manager is going to pause video..");
     this.videoPlayerRef.current.pause(this);
   }
 
-  // TODO: We will use seek instead, or seek then play
   playVideo() {
     console.log("Room Manager is going to play video..");
     this.videoPlayerRef.current.play(this);
