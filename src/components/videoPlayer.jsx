@@ -13,8 +13,8 @@ class VideoPlayer extends Component {
     this.onStateChange = this.onStateChange.bind(this);
 
     this.pause = this.pause.bind(this);
-    this.play = this.pause.bind(this);
-    this.seek = this.pause.bind(this);
+    this.play = this.play.bind(this);
+    this.seek = this.seek.bind(this);
 
     this.state = {
       videoPlayer: {
