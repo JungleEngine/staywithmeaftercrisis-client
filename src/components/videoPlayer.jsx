@@ -5,7 +5,7 @@ import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 class VideoPlayer extends Component {
   constructor(props) {
     super(props);
-    this.videoPlayerRef = React.createRef();
+    this.internalvideoPlayerRef = React.createRef();
 
     this.onReady = this.onReady.bind(this);
     this.onPlay = this.onPlay.bind(this);
@@ -31,7 +31,7 @@ class VideoPlayer extends Component {
     return (
       <YouTube
         key="vid"
-        ref={this.videoPlayerRef}
+        ref={this.internalvideoPlayerRef}
         videoId={this.props.videoId}
         opts={this.state.videoPlayer}
         onReady={this.onReady}
@@ -64,7 +64,7 @@ class VideoPlayer extends Component {
   // Called by room-manager
   pause(caller) {
     console.log("Pause called from room manager");
-    this.videoPlayerRef.current.internalPlayer.pauseVideo();
+    this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
   }
 
   // Called by room-manager
