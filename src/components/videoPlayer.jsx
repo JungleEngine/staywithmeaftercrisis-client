@@ -6,16 +6,15 @@ class VideoPlayer extends Component {
   constructor(props) {
     super(props);
     this.videoState = VIDEO_PLAYER_ACTIONS.READY;
-    this.videoPlayerRef = React.createRef();
+    this.internalvideoPlayerRef = React.createRef();
 
     this.onReady = this.onReady.bind(this);
     this.onPlay = this.onPlay.bind(this);
     this.onPause = this.onPause.bind(this);
     this.onStateChange = this.onStateChange.bind(this);
-
-    this.pause = this.pause.bind(this); // To be used by external controller
-    this.play = this.play.bind(this); // To be used by external controller
-    this.seek = this.seek.bind(this); // To be used by external controller
+    this.pause = this.pause.bind(this);
+    this.play = this.play.bind(this);
+    this.seek = this.seek.bind(this);
 
     this.state = {
       videoPlayer: {
@@ -37,7 +36,7 @@ class VideoPlayer extends Component {
     return (
       <YouTube
         key="vid"
-        ref={this.videoPlayerRef}
+        ref={this.internalvideoPlayerRef}
         videoId={this.props.videoId}
         opts={this.state.videoPlayer}
         onReady={this.onReady}
@@ -90,7 +89,7 @@ class VideoPlayer extends Component {
   pause(caller) {
     console.log("Pause called from room manager");
     this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
-    this.videoPlayerRef.current.internalPlayer.pauseVideo();
+    this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
     // set state to pause
   }
@@ -98,7 +97,7 @@ class VideoPlayer extends Component {
   play(caller) {
     console.log("Play called from room manager");
     this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
-    this.videoPlayerRef.current.internalPlayer.playVideo();
+    this.internalvideoPlayerRef.current.internalPlayer.playVideo();
   }
 
   seek(caller) {

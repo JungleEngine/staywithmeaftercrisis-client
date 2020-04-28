@@ -3,9 +3,6 @@ import io from "socket.io-client";
 import RoomForm from "./roomForm";
 import VideoPlayer from "./videoPlayer";
 
-// To be added as props.
-// const SOCKET_URL = "http://127.0.0.1:8090";
-
 class Room extends Component {
   constructor(props) {
     super(props);
@@ -20,11 +17,11 @@ class Room extends Component {
       setURL: this.setURL.bind(this),
       update: this.update.bind(this),
     };
+    
     this.handleSubmitForm = this.handleSubmitForm.bind(this);
     this.sendToServer = this.sendToServer.bind(this);
     this.handleVideoPlayerEvents = this.handleVideoPlayerEvents.bind(this);
     this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
-    // Bind functions that needs reference to this
     this.pauseVideo = this.pauseVideo.bind(this);
     this.playVideo = this.playVideo.bind(this);
   }
@@ -97,13 +94,12 @@ class Room extends Component {
     console.log(`Event handler called from videoPlayer with action:${action}`);
     this.sendToServer("update", { action: action, data: "empty" });
   }
-  // TODO: We will use seek instead, or seek then pause
+
   pauseVideo() {
     console.log("Room Manager is going to pause video..");
     this.videoPlayerRef.current.pause(this);
   }
 
-  // TODO: We will use seek instead, or seek then play
   playVideo() {
     console.log("Room Manager is going to play video..");
     this.videoPlayerRef.current.play(this);
