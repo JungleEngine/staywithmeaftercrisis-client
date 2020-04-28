@@ -5,7 +5,7 @@ import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 class VideoPlayer extends Component {
   constructor(props) {
     super(props);
-    this.videoState = VIDEO_PLAYER_ACTIONS.READY;
+    this.videoState = VIDEO_PLAYER_ACTIONS.UNSTARTED;
     this.internalvideoPlayerRef = React.createRef();
 
     this.onReady = this.onReady.bind(this);
@@ -71,6 +71,7 @@ class VideoPlayer extends Component {
   }
 
   onReady(event) {
+    this.videoState = VIDEO_PLAYER_ACTIONS.READY;
     this.props.handleEvents(VIDEO_PLAYER_ACTIONS.READY, { event: event });
   }
 
@@ -112,6 +113,10 @@ class VideoPlayer extends Component {
   // Called by room-manager
   pause(caller) {
     console.log("Pause called from room manager");
+    if (this.videoState === VIDEO_PLAYER_ACTIONS.UNSTARTED) {
+      console.log("Cannot perform pause action as player is not ready yet");
+      return;
+    }
     this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
     this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
@@ -122,13 +127,21 @@ class VideoPlayer extends Component {
   // Called by room-manager
   play(caller) {
     console.log("Play called from room manager");
-    this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
+    if (this.videoState === VIDEO_PLAYER_ACTIONS.UNSTARTED) {
+      console.log("Cannot perform pause action as player is not ready yet");
+      return;
+    }
     this.internalvideoPlayerRef.current.internalPlayer.playVideo();
+    this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
   }
 
   // Called by room-manager
   seek(caller, data) {
     console.log(`Seek called from room manager to time:${data.currentTime}`);
+    if (this.videoState === VIDEO_PLAYER_ACTIONS.UNSTARTED) {
+      console.log("Cannot perform pause action as player is not ready yet");
+      return;
+    }
     this.internalvideoPlayerRef.current.internalPlayer.seekTo(data.currentTime);
   }
 }

@@ -10,7 +10,6 @@ class Room extends Component {
     this.state = {
       socket: null,
       url: null,
-      videoPlayerIsReady: false, //To be set by a callback from videoPlayer to indicate that videoPlayer is ready..
     };
     this.videoPlayerRef = React.createRef();
     // Can be replaced by ()=> function as it binds this to Room Object
@@ -71,13 +70,6 @@ class Room extends Component {
   }
   update(data) {
     console.log("received update action: ", data);
-
-    if (this.state.videoPlayerIsReady === false) {
-      console.log(
-        "cannot perform action from server as video player is not ready/loaded yet.."
-      );
-      return;
-    }
     if (data.action === "play") {
       this.playVideo();
     }
@@ -119,10 +111,6 @@ class Room extends Component {
   }
 
   handleVideoPlayerEvents(action, _data) {
-    // If action == Ready, then set videoPlayer Ready state to true.
-    if (action === VIDEO_PLAYER_ACTIONS.READY) {
-      this.setState({ videoPlayerIsReady: true });
-    }
     console.log(`Event handler called from videoPlayer with action:${action}`);
     this.sendToServer("update", { action: action, data: {} });
   }
