@@ -117,11 +117,10 @@ class VideoPlayer extends Component {
       console.log("Cannot perform pause action as player is not ready yet");
       return;
     }
-    this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
-    this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     // don't broadcast to users
     // set state to pause
     this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
+    this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
   }
 
   // Called by room-manager
