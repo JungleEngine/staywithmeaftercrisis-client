@@ -201,7 +201,7 @@ class VideoPlayer extends Component {
     }
     if (this.videoState !== VIDEO_PLAYER_ACTIONS.PAUSE) {
       this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
-      this.counters.pause++;
+      this.counters.pause = 1;
       await this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     }
 
@@ -213,10 +213,10 @@ class VideoPlayer extends Component {
       console.log("Cannot perform buffer action as player is not ready yet");
       return;
     }
-    if (this.videoState !== VIDEO_PLAYER_ACTIONS.BUFFERING) {
-      this.videoState = VIDEO_PLAYER_ACTIONS.BUFFERING;
-      this.pause(this, data);
-    }
+    // if (this.videoState !== VIDEO_PLAYER_ACTIONS.BUFFERING) {
+    this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
+    this.pause(this, data);
+    // }
   }
 
   // Called by room-manager
@@ -230,13 +230,17 @@ class VideoPlayer extends Component {
     //   return;
     // }
     if (this.videoState === VIDEO_PLAYER_ACTIONS.BUFFERING) {
+      this.counters.pause = 1;
+      await this.sync(data.currentTime);
       // await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
       return;
     }
-    await this.pause(this, data);
-    this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
-    this.counters.play++;
-    await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
+    // await this.pause(this, data);
+    if (this.videoState !== VIDEO_PLAYER_ACTIONS.PLAY) {
+      this.videoState = VIDEO_PLAYER_ACTIONS.PLAY;
+      this.counters.play = 1;
+      await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
+    }
   }
   async sync(target) {
     if (this.videoState === VIDEO_PLAYER_ACTIONS.UNSTARTED) {
@@ -244,7 +248,7 @@ class VideoPlayer extends Component {
       return;
     }
     let currentTime = await this.internalvideoPlayerRef.current.internalPlayer.getCurrentTime();
-    if (Math.abs(target - currentTime) > 1) {
+    if (Math.abs(target - currentTime) > 3) {
       console.log(
         "syncronizing the video time as the difference was more than one sec"
       );
@@ -252,7 +256,7 @@ class VideoPlayer extends Component {
     } else {
       console.log(
         "no need for sync, absolute difference:",
-        Math.abs(target - currentTime)
+        Math.abs(target - currentTime + 0.5)
       );
     }
   }
