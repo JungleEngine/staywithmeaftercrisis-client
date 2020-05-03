@@ -17,7 +17,8 @@ class VideoPlayer extends Component {
     this.play = this.play.bind(this); // To be used by external controller
     this.seek = this.seek.bind(this); // To be used by external controller
     this.buffer = this.buffer.bind(this);
-
+    this.resync = this.resync.bind(this);
+    this._resync = this._resync.bind(this);
     this.counters = {
       // "-1":0,
       // "0":0,
@@ -136,6 +137,8 @@ class VideoPlayer extends Component {
     let currentTime = await this.internalvideoPlayerRef.current.internalPlayer.getCurrentTime();
     console.log(currentTime);
     if (this.videoState === VIDEO_PLAYER_ACTIONS.PLAY) {
+      this.counters.buffering = 0;
+      this.counters.pause = 0;
       console.log("onStateChange: played due to self playing");
       this.props.handleEvents(VIDEO_PLAYER_ACTIONS.PLAY, {
         currentTime: currentTime,
@@ -147,6 +150,7 @@ class VideoPlayer extends Component {
       });
     } else if (this.videoState === VIDEO_PLAYER_ACTIONS.BUFFERING) {
       console.log("onStateChange: buffering");
+      this.counters.pause = 0;
       this.props.handleEvents(VIDEO_PLAYER_ACTIONS.BUFFERING, {
         currentTime: currentTime,
       });
@@ -161,7 +165,84 @@ class VideoPlayer extends Component {
   async playPlay() {
     await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
   }
-
+  async _resync() {
+    let currentTime = await this.internalvideoPlayerRef.current.internalPlayer.getCurrentTime();
+    this.props.handleEvents("resync", {
+      currentTime: currentTime,
+      state: this.mapStateToString(
+        await this.internalvideoPlayerRef.current.internalPlayer.getPlayerState()
+      ),
+    });
+  }
+  async resync(data) {
+    console.log("tessssst ", data);
+    let targetState = data.state;
+    let targetTime = data.currentTime;
+    let currentState = await this.getVideoPlayerState();
+    console.log(currentState);
+    if (currentState === VIDEO_PLAYER_ACTIONS.PLAY) {
+      if (
+        targetState === VIDEO_PLAYER_ACTIONS.PLAY ||
+        targetState === VIDEO_PLAYER_ACTIONS.BUFFERING
+      ) {
+        this.counters.pause = 0;
+        this.counters.buffering = 1;
+        this.counters.play = 1;
+        console.log("seek to when playing");
+        await this.internalvideoPlayerRef.current.internalPlayer.seekTo(
+          targetTime
+        );
+      }
+      if (targetState === VIDEO_PLAYER_ACTIONS.PAUSE) {
+        this.counters.pause = 1;
+        this.counters.buffering = 0;
+        this.counters.play = 0;
+        await this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
+        await this.sync(targetTime);
+      }
+    }
+    if (currentState === VIDEO_PLAYER_ACTIONS.PAUSE) {
+      if (targetState === VIDEO_PLAYER_ACTIONS.PAUSE) {
+        this.counters.pause = 0;
+        this.counters.buffering = 0;
+        this.counters.play = 0;
+        await this.sync(targetTime);
+      }
+      if (
+        targetState === VIDEO_PLAYER_ACTIONS.PLAY ||
+        targetState === VIDEO_PLAYER_ACTIONS.BUFFERING
+      ) {
+        this.counters.pause = 0;
+        this.counters.buffering = 1;
+        this.counters.play = 1;
+        await this.sync(targetTime);
+        await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
+      }
+    }
+    if (currentState === VIDEO_PLAYER_ACTIONS.BUFFERING) {
+      if (targetState === VIDEO_PLAYER_ACTIONS.PAUSE) {
+        this.counters.pause = 1;
+        this.counters.buffering = 0;
+        this.counters.play = 0;
+        await this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
+        await this.sync(targetTime);
+      }
+      if (
+        targetState === VIDEO_PLAYER_ACTIONS.PLAY ||
+        targetState === VIDEO_PLAYER_ACTIONS.BUFFERING
+      ) {
+        this.counters.pause = 0;
+        this.counters.buffering = 0;
+        this.counters.play = 1;
+        await this.sync(targetTime);
+      }
+    }
+  }
+  async getVideoPlayerState() {
+    return this.mapStateToString(
+      await this.internalvideoPlayerRef.current.internalPlayer.getPlayerState()
+    );
+  }
   mapStateToString(state) {
     let str;
     switch (state) {
@@ -197,11 +278,14 @@ class VideoPlayer extends Component {
     }
     if (this.videoState === VIDEO_PLAYER_ACTIONS.BUFFERING) {
       // await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
+      this.counters.play = 0;
       return;
     }
     if (this.videoState !== VIDEO_PLAYER_ACTIONS.PAUSE) {
       this.videoState = VIDEO_PLAYER_ACTIONS.PAUSE;
       this.counters.pause = 1;
+      this.counters.play = 0;
+      this.counters.buffering = 0;
       await this.internalvideoPlayerRef.current.internalPlayer.pauseVideo();
     }
 
@@ -230,7 +314,9 @@ class VideoPlayer extends Component {
     //   return;
     // }
     if (this.videoState === VIDEO_PLAYER_ACTIONS.BUFFERING) {
-      this.counters.pause = 1;
+      this.counters.play = 1;
+      this.counters.pause = 0;
+      this.counters.buffering = 0;
       await this.sync(data.currentTime);
       // await this.internalvideoPlayerRef.current.internalPlayer.playVideo();
       return;

@@ -91,6 +91,12 @@ class Room extends Component {
     if (data.action === "buffer") {
       this.bufferVideo(data);
     }
+    if (data.action === "resync") {
+      this.resync(data);
+    }
+  }
+  resync(data) {
+    this.videoPlayerRef.current.resync(data.data);
   }
   attachRoomEvents() {
     for (var event in this.eventHandlers) {
@@ -122,6 +128,7 @@ class Room extends Component {
     this.sendToServer("update", {
       action: action,
       currentTime: _data.currentTime,
+      state: _data.state,
     });
   }
 
