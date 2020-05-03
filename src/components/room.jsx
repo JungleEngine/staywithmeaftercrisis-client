@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import io from "socket.io-client";
 import RoomForm from "./roomForm";
 import VideoPlayer from "./videoPlayer";
+// eslint-disable-next-line
 import { VIDEO_PLAYER_ACTIONS } from "./../constants/videoPlayerActions";
 
 class Room extends Component {
@@ -30,6 +31,7 @@ class Room extends Component {
     this.renderVideoPlayer = this.renderVideoPlayer.bind(this);
     this.pauseVideo = this.pauseVideo.bind(this);
     this.playVideo = this.playVideo.bind(this);
+    this.bufferVideo = this.bufferVideo.bind(this);
   }
 
   componentDidMount() {
@@ -70,14 +72,24 @@ class Room extends Component {
   }
   update(data) {
     console.log("received update action: ", data);
+    if (
+      this.videoPlayerRef.current.counters.play !== 0 ||
+      this.videoPlayerRef.current.counters.pause !== 0 ||
+      this.videoPlayerRef.current.counters.buffering !== 0
+    ) {
+      console.log("video player is busy.... come back again");
+    }
     if (data.action === "play") {
-      this.playVideo();
+      this.playVideo(data);
     }
     if (data.action === "pause") {
-      this.pauseVideo();
+      this.pauseVideo(data);
     }
     if (data.action === "seek") {
       this.seekVideo(data);
+    }
+    if (data.action === "buffer") {
+      this.bufferVideo(data);
     }
   }
   attachRoomEvents() {
@@ -100,10 +112,6 @@ class Room extends Component {
   }
 
   handleVideoPlayerIntervalUpdates(data) {
-    console.log(
-      `Interval updates from player: currentTime:${data.currentTime}`
-    );
-
     this.sendToServer("update", {
       action: "seek",
       currentTime: data.currentTime,
@@ -111,29 +119,30 @@ class Room extends Component {
   }
 
   handleVideoPlayerEvents(action, _data) {
-    console.log(`Event handler called from videoPlayer with action:${action}`);
-    this.sendToServer("update", { action: action, data: {} });
+    this.sendToServer("update", {
+      action: action,
+      currentTime: _data.currentTime,
+    });
   }
 
-  pauseVideo() {
-    console.log("Room Manager is going to pause video..");
-    this.videoPlayerRef.current.pause(this);
+  pauseVideo(data) {
+    this.videoPlayerRef.current.pause(this, data.data);
   }
 
-  playVideo() {
-    console.log("Room Manager is going to play video..");
-    this.videoPlayerRef.current.play(this);
+  playVideo(data) {
+    this.videoPlayerRef.current.play(this, data.data);
   }
 
-  //TODO:: Check potential bug may occur as player maybe called to seek but not loaded yet.
-  //This potential bug is probably fixed by adding videoplayer ready state, updated when player is ready (onReady)
   seekVideo(data) {
-    console.log("Room Manager is going to seek video..");
     this.videoPlayerRef.current.seek(this, {
       currentTime: data.data.currentTime,
     });
   }
-
+  bufferVideo(data) {
+    this.videoPlayerRef.current.buffer(this, {
+      currentTime: data.data.currentTime,
+    });
+  }
   renderVideoPlayer() {
     if (this.state.url) {
       return (
